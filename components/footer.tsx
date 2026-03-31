@@ -8,7 +8,6 @@ export function Footer() {
         <div className="grid gap-8 md:grid-cols-4">
           <div className="space-y-4">
             <Link href="/" className="flex items-center gap-2">
-              <Image src="/images/logo.png" alt="DriveNow" width={36} height={36} className="rounded-lg" />
               <span className="text-xl font-semibold">DriveNow</span>
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed">

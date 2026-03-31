@@ -1,7 +1,6 @@
 "use client"
 
 import Link from "next/link"
-import Image from "next/image"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
@@ -57,7 +56,6 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2">
-          <Image src="/images/logo.png" alt="DriveNow" width={36} height={36} className="rounded-lg" />
           <span className="text-xl font-semibold tracking-tight">DriveNow</span>
         </Link>
 
@@ -141,7 +139,6 @@ export function Header() {
           <SheetContent side="right" className="w-80">
             <div className="flex flex-col gap-6 pt-8">
               <Link href="/" className="flex items-center gap-2" onClick={() => setOpen(false)}>
-                <Image src="/images/logo.png" alt="DriveNow" width={36} height={36} className="rounded-lg" />
                 <span className="text-xl font-semibold">DriveNow</span>
               </Link>
               <nav className="flex flex-col gap-4">
