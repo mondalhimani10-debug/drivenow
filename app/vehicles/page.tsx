@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import useSWR from "swr"
 import { Header } from "@/components/header"
@@ -23,7 +23,7 @@ const fuelTypes = ["gasoline", "diesel", "electric", "hybrid"] as const
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
-export default function VehiclesPage() {
+function VehiclesContent() {
   const searchParams = useSearchParams()
   const initialCategory = searchParams.get("category") || ""
   
@@ -428,5 +428,13 @@ export default function VehiclesPage() {
 
       <Footer />
     </div>
+  )
+}
+
+export default function VehiclesPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><Spinner /></div>}>
+      <VehiclesContent />
+    </Suspense>
   )
 }

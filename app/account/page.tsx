@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
@@ -36,47 +36,7 @@ import {
   EyeOff
 } from "lucide-react"
 
-// Mock reservations data
-const mockReservations = [
-  {
-    id: "RES-001",
-    vehicleId: "1",
-    status: "upcoming" as const,
-    pickupLocation: "Mumbai, Maharashtra",
-    returnLocation: "Mumbai, Maharashtra",
-    pickupDate: "2026-04-15",
-    returnDate: "2026-04-18",
-    pickupTime: "10:00",
-    returnTime: "18:00",
-    totalPrice: 49096
-  },
-  {
-    id: "RES-002",
-    vehicleId: "4",
-    status: "completed" as const,
-    pickupLocation: "Bangalore, Karnataka",
-    returnLocation: "Bangalore, Karnataka",
-    pickupDate: "2026-03-01",
-    returnDate: "2026-03-03",
-    pickupTime: "09:00",
-    returnTime: "17:00",
-    totalPrice: 55950
-  },
-  {
-    id: "RES-003",
-    vehicleId: "7",
-    status: "cancelled" as const,
-    pickupLocation: "Delhi, NCR",
-    returnLocation: "Delhi, NCR",
-    pickupDate: "2026-02-20",
-    returnDate: "2026-02-22",
-    pickupTime: "12:00",
-    returnTime: "12:00",
-    totalPrice: 67570
-  }
-]
-
-export default function AccountPage() {
+function AccountContent() {
   const searchParams = useSearchParams()
   const bookingSuccess = searchParams.get("booking") === "success"
   const supabase = createClient()
@@ -84,6 +44,8 @@ export default function AccountPage() {
   const [activeTab, setActiveTab] = useState("reservations")
   const [isLoading, setIsLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
+  const [reservations, setReservations] = useState<any[]>([])
+  const [isLoadingReservations, setIsLoadingReservations] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   
   // Login form state
@@ -112,6 +74,15 @@ export default function AccountPage() {
         setMemberSince(user.created_at 
           ? new Date(user.created_at).toLocaleDateString("en-IN", { month: "long", year: "numeric" })
           : "N/A")
+        
+        // Fetch user's reservations
+        setIsLoadingReservations(true)
+        const response = await fetch("/api/bookings")
+        if (response.ok) {
+          const data = await response.json()
+          setReservations(data)
+        }
+        setIsLoadingReservations(false)
       }
       setIsLoading(false)
     }
@@ -347,7 +318,11 @@ export default function AccountPage() {
                       <CardDescription>View and manage your vehicle bookings</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      {mockReservations.length === 0 ? (
+                      {isLoadingReservations ? (
+                        <div className="flex items-center justify-center py-12">
+                          <Spinner className="h-8 w-8" />
+                        </div>
+                      ) : reservations.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-12 text-center">
                           <CalendarDays className="mb-4 h-12 w-12 text-muted-foreground" />
                           <h3 className="text-lg font-semibold">No reservations yet</h3>
@@ -360,8 +335,8 @@ export default function AccountPage() {
                         </div>
                       ) : (
                         <div className="space-y-4">
-                          {mockReservations.map((reservation) => {
-                            const vehicle = vehicles.find((v) => v.id === reservation.vehicleId)
+                          {reservations.map((reservation) => {
+                            const vehicle = reservation.vehicles
                             if (!vehicle) return null
                             
                             return (
@@ -388,15 +363,15 @@ export default function AccountPage() {
                                   <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                                     <div className="flex items-center gap-1.5">
                                       <MapPin className="h-4 w-4" />
-                                      <span>{reservation.pickupLocation}</span>
+                                      <span>{reservation.pickup_location}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
                                       <CalendarDays className="h-4 w-4" />
-                                      <span>{reservation.pickupDate} - {reservation.returnDate}</span>
+                                      <span>{reservation.pickup_date} - {reservation.return_date}</span>
                                     </div>
                                   </div>
                                   <div className="flex items-center justify-between pt-2">
-                                    <span className="font-semibold">₹{reservation.totalPrice}</span>
+                                    <span className="font-semibold">₹{reservation.total_price}</span>
                                     <Link href={`/vehicles/${vehicle.id}`}>
                                       <Button variant="outline" size="sm" className="gap-1">
                                         View Details
@@ -552,5 +527,13 @@ export default function AccountPage() {
 
       <Footer />
     </div>
+  )
+}
+
+export default function AccountPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><Spinner /></div>}>
+      <AccountContent />
+    </Suspense>
   )
 }
